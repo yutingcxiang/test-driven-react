@@ -1,5 +1,5 @@
 import React from 'react';
-import { isTSAnyKeyword, exportAllDeclaration } from '@babel/types';
+// import { isTSAnyKeyword, exportAllDeclaration } from '@babel/types';
 
 describe('JSX', () => {
   it('calls React.createElement', () => {
