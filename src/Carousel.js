@@ -15,11 +15,7 @@ class Carousel extends React.PureComponent {
   decreaseIndex = () => {
     // this.setState({ slideIndex: this.state.slideIndex - 1 })
     const { slides } = this.props;
-    if (this.state.slideIndex === 0) {
-      this.setState(({ slideIndex }) => ({ slideIndex: slides.length - 1 }))
-    } else {
-      this.setState(({ slideIndex }) => ({ slideIndex: slideIndex - 1 }))
-    }
+    this.setState(({ slideIndex }) => ({ slideIndex: (slideIndex - 1) % slides.length }))
   }
 
   increaseIndex = () => {

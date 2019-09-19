@@ -27,7 +27,7 @@ describe('CarouselSlide', () => {
 
   it('uses "description" and "attribution" as the <figcaption>', () => {
     const description = 'A jaw-droppingly spectacular image';
-    const attribution = "Trever Burnham";
+    const attribution = 'Trever Burnham';
     wrapper.setProps({ description, attribution });
     expect(wrapper.find('figcaption').text()).toBe(`${description} ${attribution}`);
     expect(wrapper.find('figcaption strong').text()).toBe(description)
