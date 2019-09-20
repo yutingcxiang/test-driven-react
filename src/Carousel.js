@@ -20,7 +20,7 @@ export default class Carousel extends React.PureComponent {
   decreaseIndex = () => {
     // this.setState({ slideIndex: this.state.slideIndex - 1 })
     const { slides } = this.props;
-    this.setState(({ slideIndex }) => ({ slideIndex: (slideIndex - 1) % slides.length }))
+    this.setState(({ slideIndex }) => ({ slideIndex: (slideIndex + slides.length - 1) % slides.length }))
   }
 
   increaseIndex = () => {
