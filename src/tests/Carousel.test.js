@@ -1,11 +1,25 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import Carousel from '../Carousel';
+import Carousel, { Carousel as CoreCarousel } from '../Carousel';
 import CarouselButton from '../CarouselButton';
 import CarouselSlide from '../CarouselSlide';
 
 describe('Carousel', () => {
-  let wrapper;
+  describe('component with HOC', () => {
+    let wrapper;
+
+    beforeEach(() => {
+      wrapper = shallow(<Carousel slides={slides} />);
+    });
+
+    it('sets slideIndex={0} on the core component', () => {
+      expect(wrapper.find(CoreCarousel).prop('slideIndex')).toBe(0);
+    });
+
+    it('passes slides down to the core component', () => {
+      expect(wrapper.find(CoreCarousel).prop('slides')).toBe(slides);
+    })
+  })
 
   const slides = [
       {
@@ -25,84 +39,88 @@ describe('Carousel', () => {
       },
     ];
 
-  beforeEach(() => {
-    wrapper = shallow(<Carousel slides={slides} />);
-  });
+  describe('core component', () => {
+    let wrapper;
+    const slideIndexDecrease = jest.fn();
+    const slideIndexIncrease = jest.fn();
 
-  it('renders a <div>', () => {
-    expect(wrapper.type()).toBe('div');
-  });
-
-  describe('Prev button', () => {
-    it('renders a CarouselButton labeled "Prev"', () => {
-      expect(
-        wrapper.find(CarouselButton).at(0).prop('children')
-      ).toBe('Prev');
+    beforeEach(() => {
+      wrapper = shallow(<CoreCarousel slides={slides} slideIndex={0} slideIndexDecrease={slideIndexDecrease} slideIndexIncrease={slideIndexIncrease} />);
     });
-  
-    it('decrements "slideIndex" when prev is clicked', () => {
-      wrapper.setState({ slideIndex: 1 });
-      wrapper.find('[data-action="prev"]').simulate('click');
-      expect(wrapper.state('slideIndex')).toBe(0);
-    })  
 
-    it('next wraps "slideIndex" to the max when prev is clicked on first slide', () => {
-      wrapper.setState({ slideIndex: 0 });
-      wrapper.find('[data-action="prev"]').simulate('click');
-      expect(wrapper.state('slideIndex')).toBe(slides.length-1);
-    })
-  })
-
-  describe('Next button', () => {
-    it('renders a CarouselButton labeled "Next"', () => {
-      expect(
-        wrapper.find(CarouselButton).at(1).prop('children')
-      ).toBe('Next');
+    it('renders a <div>', () => {
+      expect(wrapper.type()).toBe('div');
     });
-  
-    it('increments "slideIndex" when next is clicked', () => {
-      wrapper.setState({ slideIndex: 1 });
-      wrapper.find('[data-action="next"]').simulate('click');
-      expect(wrapper.state('slideIndex')).toBe(2);
-    })  
 
-    it('next wraps "slideIndex" to the first when next is clicked on last slide', () => {
-      wrapper.setState({ slideIndex: slides.length - 1 });
-      wrapper.find('[data-action="next"]').simulate('click');
-      expect(wrapper.state('slideIndex')).toBe(0);
-    })
-  })
-
-  describe('Slide Display', () => {
-    it('renders the current slide as a CarouselSlide', () => {
-      let slideProps;
-      slideProps = wrapper.find(CarouselSlide).props();
-      expect(slideProps).toEqual({
-        ...CarouselSlide.defaultProps,
-        ...slides[0],
+    describe('Prev button', () => {
+      it('renders a CarouselButton labeled "Prev"', () => {
+        expect(
+          wrapper.find(CarouselButton).at(0).prop('children')
+        ).toBe('Prev');
       });
-      wrapper.setState({ slideIndex: 1 });
-      slideProps = wrapper.find(CarouselSlide).props();
-      expect(slideProps).toEqual({
-        ...CarouselSlide.defaultProps,
-        ...slides[1],
-      });
+    
+      it('decrements "slideIndex" when prev is clicked', () => {
+        wrapper.find('[data-action="prev"]').simulate('click');
+        expect(slideIndexDecrease).toHaveBeenCalledWith(slides.length)
+      })  
+
+      // it('next wraps "slideIndex" to the max when prev is clicked on first slide', () => {
+      //   wrapper.setState({ slideIndex: 0 });
+      //   wrapper.find('[data-action="prev"]').simulate('click');
+      //   expect(wrapper.state('slideIndex')).toBe(slides.length-1);
+      // })
     })
+
+    describe('Next button', () => {
+      it('renders a CarouselButton labeled "Next"', () => {
+        expect(
+          wrapper.find(CarouselButton).at(1).prop('children')
+        ).toBe('Next');
+      });
+    
+      it('increments "slideIndex" when next is clicked', () => {
+        wrapper.find('[data-action="next"]').simulate('click');
+        expect(slideIndexIncrease).toHaveBeenCalledWith(slides.length);
+      })  
+
+      // it('next wraps "slideIndex" to the first when next is clicked on last slide', () => {
+      //   wrapper.setState({ slideIndex: slides.length - 1 });
+      //   wrapper.find('[data-action="next"]').simulate('click');
+      //   expect(wrapper.state('slideIndex')).toBe(0);
+      // })
+    })
+
+    describe('Slide Display', () => {
+      it('renders the current slide as a CarouselSlide', () => {
+        let slideProps;
+        slideProps = wrapper.find(CarouselSlide).props();
+        expect(slideProps).toEqual({
+          ...CarouselSlide.defaultProps,
+          ...slides[0],
+        });
+        wrapper.setProps({ slideIndex: 1 });
+        slideProps = wrapper.find(CarouselSlide).props();
+        expect(slideProps).toEqual({
+          ...CarouselSlide.defaultProps,
+          ...slides[1],
+        });
+      })
+    })
+
+    it('passes defaultImg and defaultImgHeight to the CarouselSlide', () =>{
+      const defaultImg = () => 'test';
+      const defaultImgHeight = 1234;
+      wrapper.setProps({ defaultImg, defaultImgHeight });
+      expect(wrapper.find(CarouselSlide).prop('Img')).toBe(defaultImg);
+      expect(wrapper.find(CarouselSlide).prop('imgHeight')).toBe(defaultImgHeight);
+    });
+
+    it('allows individual slides to override Img and imgHeight', () => {
+      const Img = () => 'test';
+      const imgHeight = 1234;
+      wrapper.setProps({ slides: [{ ...slides[0], Img, imgHeight }]});
+      expect(wrapper.find(CarouselSlide).prop('Img')).toBe(Img);
+      expect(wrapper.find(CarouselSlide).prop('imgHeight')).toBe(imgHeight);
+    });
   })
-
-  it('passes defaultImg and defaultImgHeight to the CarouselSlide', () =>{
-    const defaultImg = () => 'test';
-    const defaultImgHeight = 1234;
-    wrapper.setProps({ defaultImg, defaultImgHeight });
-    expect(wrapper.find(CarouselSlide).prop('Img')).toBe(defaultImg);
-    expect(wrapper.find(CarouselSlide).prop('imgHeight')).toBe(defaultImgHeight);
-  });
-
-  it('allows individual slides to override Img and imgHeight', () => {
-    const Img = () => 'test';
-    const imgHeight = 1234;
-    wrapper.setProps({ slides: [{ ...slides[0], Img, imgHeight }]});
-    expect(wrapper.find(CarouselSlide).prop('Img')).toBe(Img);
-    expect(wrapper.find(CarouselSlide).prop('imgHeight')).toBe(imgHeight);
-  });
 });
